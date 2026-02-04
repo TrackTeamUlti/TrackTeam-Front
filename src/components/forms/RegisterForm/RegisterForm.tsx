@@ -5,6 +5,7 @@ import Input from "@/components/Input/Input";
 import Button from "@/components/Button/Button";
 import { registerUser } from "@/actions/auth";
 import styles from "./registerForm.module.css";
+import Link from "next/link";
 
 interface RegisterFormProps {
   onSubmit?: (
@@ -14,7 +15,7 @@ interface RegisterFormProps {
   ) => void | Promise<void>;
 }
 
-const RegisterForm: React.FC<RegisterFormProps> = ({ onSubmit }) => {
+const RegisterForm: React.FC<RegisterFormProps> = ({ }) => {
   // Utilisation de useActionState pour gérer l'état de la Server Action
   const [state, formAction, isPending] = useActionState(registerUser, null);
 
@@ -115,6 +116,9 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSubmit }) => {
         >
           {isPending ? "Inscription..." : "S'inscrire"}
         </Button>
+        <Link href={"/auth/login"} className={styles.loginLink}>
+          Se connecter
+        </Link>
       </div>
     </form>
   );

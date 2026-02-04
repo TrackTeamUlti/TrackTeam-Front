@@ -69,6 +69,20 @@
   display: block;
 }
 
+.loginLink {
+  display: inline;
+  align-self: center;
+  margin-top: 4px;
+  color: #4b5563;
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.loginLink:hover {
+  text-decoration: underline;
+  color: #111827;
+}
+
 /* Responsive */
 @media (max-width: 480px) {
   .form {

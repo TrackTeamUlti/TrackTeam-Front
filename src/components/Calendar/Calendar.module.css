@@ -1,0 +1,11 @@
+.calendar {
+  width: 100%;
+  max-width: 1200px;
+  height: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.calendar :global(.fc) {
+  height: 100%;
+}

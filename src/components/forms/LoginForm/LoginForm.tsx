@@ -1,111 +1,31 @@
-'use client'
+"use client";
 
-import React, { useState } from 'react'
-import Input from '@/components/Input/Input'
-import Button from '@/components/Button/Button'
-import styles from './loginForm.module.css'
+import React, { useActionState, useEffect, useState } from "react";
+import Input from "@/components/Input/Input";
+import Button from "@/components/Button/Button";
+import Link from "next/link";
+import styles from "./loginForm.module.css";
+import { loginUser } from "@/actions/auth";
 
-interface LoginFormProps {
-  onSubmit?: (email: string, password: string) => void | Promise<void>
-  isLoading?: boolean
-}
+interface LoginFormProps {}
 
-interface FormErrors {
-  email?: string
-  username?: string
-  password?: string
-}
+const LoginForm: React.FC<LoginFormProps> = ({}) => {
+  const [state, formAction, isPending] = useActionState(loginUser, null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, isLoading = false }) => {
-  const [email, setEmail] = useState('')
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [errors, setErrors] = useState<FormErrors>({})
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
-  const validateEmail = (email: string): string | undefined => {
-    if (!email) {
-      return 'L\'email est requis'
+  // Réinitialiser le formulaire uniquement en cas de succès
+  useEffect(() => {
+    if (state?.success) {
+      setTimeout(() => {
+        setEmail("");
+        setPassword("");
+      }, 0);
     }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(email)) {
-      return 'Veuillez entrer un email valide'
-    }
-    return undefined
-  }
-
-  const validateUsername = (username: string): string | undefined => {
-    if (!username) {
-      return 'Le nom d\'utilisateur est requis'
-    }
-    return undefined
-  }
-
-  const validatePassword = (password: string): string | undefined => {
-    if (!password) {
-      return 'Le mot de passe est requis'
-    }
-    if (password.length < 6) {
-      return 'Le mot de passe doit contenir au moins 6 caractères'
-    }
-    return undefined
-  }
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    
-    const emailError = validateEmail(email)
-    const usernameError = validateUsername(username)
-    const passwordError = validatePassword(password)
-
-    setErrors({
-      email: emailError,
-      username: usernameError,
-      password: passwordError,  
-    })
-
-    if (emailError || passwordError) {
-      return
-    }
-
-    setIsSubmitting(true)
-    
-    try {
-      if (onSubmit) {
-        await onSubmit(email, password)
-      }
-    } catch (error) {
-      console.error('Erreur lors de la connexion:', error)
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value)
-    if (errors.email) {
-      setErrors(prev => ({ ...prev, email: undefined }))
-    }
-  }
-
-  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUsername(e.target.value)
-    if (errors.username) {
-      setErrors(prev => ({ ...prev, username: undefined }))
-    }
-  }
-
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPassword(e.target.value)
-    if (errors.password) {
-      setErrors(prev => ({ ...prev, password: undefined }))
-    }
-  }
-
-  const isFormDisabled = isLoading || isSubmitting
+  }, [state?.success]);
 
   return (
-    <form className={styles.form} onSubmit={handleSubmit} noValidate>
+    <form className={styles.form} action={formAction} noValidate>
       <div className={styles.header}>
         <h1 className={styles.title}>Connexion</h1>
         <p className={styles.subtitle}>Connectez-vous à votre compte</p>
@@ -114,18 +34,18 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, isLoading = false }) =>
       <div className={styles.fields}>
         <Input
           id="email"
+          name="email"
           label="Email"
           type="email"
           placeholder="votre@email.com"
           value={email}
-          onChange={handleEmailChange}
-          error={errors.email}
+          onChange={(e) => setEmail(e.target.value)}
           fullWidth
-          disabled={isFormDisabled}
+          disabled={isPending}
           required
         />
 
-        <Input
+        {/* <Input
           id="username"
           label="Nom d'utilisateur"
           type="text"
@@ -136,35 +56,46 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, isLoading = false }) =>
           fullWidth
           disabled={isFormDisabled}
           required
-        />
+        /> */}
 
         <Input
           id="password"
+          name="password"
           label="Mot de passe"
           type="password"
           placeholder="••••••••"
           value={password}
-          onChange={handlePasswordChange}
-          error={errors.password}
+          onChange={(e) => setPassword(e.target.value)}
           fullWidth
-          disabled={isFormDisabled}
+          disabled={isPending}
           required
         />
       </div>
+
+      {state?.error && <div className={styles.errorMessage}>{state.error}</div>}
+
+      {state?.success && (
+        <div className={styles.successMessage}>
+          {state.message || "Inscription réussie !"}
+        </div>
+      )}
 
       <div className={styles.actions}>
         <Button
           type="submit"
           variant="primary"
           size="large"
-          disabled={isFormDisabled}
+          disabled={isPending}
           className={styles.submitButton}
         >
-          {isFormDisabled ? 'Connexion...' : 'Se connecter'}
+          {isPending ? "Connexion..." : "Se connecter"}
         </Button>
+        <Link href="/auth/register" className={styles.registerLink}>
+          Pas encore de compte ? S'inscrire
+        </Link>
       </div>
     </form>
-  )
-}
+  );
+};
 
-export default LoginForm
+export default LoginForm;
